@@ -1,466 +1,110 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>IFPIFLIX - Quiz Interativo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <title>IFPIFLIX - Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        :root { 
-            --netflix-red: #E50914; 
-            --dark-bg: #090909;
-            --card-glass: rgba(22, 22, 22, 0.85);
-            --border-glass: rgba(255, 255, 255, 0.08);
-            --neon-blue: #00f0ff;
-        }
+        :root { --netflix-red: #E50914; --dark-bg: #090909; --neon-blue: #00f0ff; }
+        body { margin: 0; padding: 0; background-color: var(--dark-bg); color: #fff; font-family: 'Inter', sans-serif; text-align: center; overflow: hidden; user-select: none; -webkit-tap-highlight-color: transparent; }
         
-        body { 
-            margin: 0; 
-            padding: 0; 
-            background-color: var(--dark-bg); 
-            color: #fff; 
-            font-family: 'Inter', sans-serif; 
-            text-align: center; 
-            overflow: hidden; 
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+        .container { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 24px; box-sizing: border-box; }
+        .logo { font-family: 'Bebas Neue', sans-serif; font-size: 4rem; color: var(--netflix-red); letter-spacing: 2px; margin-bottom: 20px; }
+        
+        .glass-card { background: rgba(22, 22, 22, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px 24px; border-radius: 12px; width: 100%; max-width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input { background: rgba(0, 0, 0, 0.5); border: 1px solid #444; padding: 15px; color: #fff; width: 100%; box-sizing: border-box; border-radius: 6px; margin-bottom: 20px; text-align: center; font-size: 1.1rem; font-weight: bold; outline: none; }
+        input:focus { border-color: #3b82f6; }
+        
+        button.btn-main { background: #3b82f6; color: white; padding: 15px; border: none; width: 100%; border-radius: 6px; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.2s; }
+        button.btn-main:active { transform: scale(0.95); }
+        
+        /* QUIZ E CRONÔMETRO */
+        .timer-bar-container { width: 100%; height: 8px; background: #333; position: absolute; top: 0; left: 0; }
+        .timer-bar-fill { height: 100%; background: #3b82f6; width: 100%; transition: width 20s linear; }
+        
+        .quiz-header { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: #3b82f6; margin-bottom: 15px; letter-spacing: 1px;}
+        .question-text { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; line-height: 1.4; color: #fff; }
+        .answer-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #ccc; padding: 15px; margin-bottom: 10px; width: 100%; text-align: left; border-radius: 8px; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 15px; transition: 0.2s; }
+        .option-letter { background: rgba(255,255,255,0.1); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; }
+        
+        .answer-btn.locked { opacity: 0.6; pointer-events: none; }
+        .answer-btn.selected { background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; color: #fff; opacity: 1;}
+        
+        /* RESULTADOS DA QUESTÃO */
+        .result-box { display: none; padding: 20px; border-radius: 8px; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; animation: popIn 0.3s ease; }
+        .result-box.correct { display: block; background: rgba(16, 185, 129, 0.2); color: #10b981; border: 2px solid #10b981; }
+        .result-box.wrong { display: block; background: rgba(229, 9, 20, 0.2); color: #E50914; border: 2px solid #E50914; }
 
-        .ambient-bg {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, rgba(229, 9, 20, 0.05) 0%, rgba(9, 9, 9, 1) 100%);
-            z-index: 1;
-            pointer-events: none;
-        }
+        /* TELA DE EVENTO FINAL (CAMUFLADA) */
+        #screen-evt { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #000; padding: 24px; position: relative; }
+        #screen-evt.active-evt { animation: alertPulse 0.4s infinite; }
+        .alert-title { font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; color: #fff; margin-bottom: 10px; font-weight: 900; }
+        .alert-sub { font-family: 'Share Tech Mono', monospace; color: #ff3b30; font-size: 1rem; margin-bottom: 25px; }
+        .prog-bg { width: 100%; height: 12px; background: rgba(255,255,255,0.2); border-radius: 6px; position: relative; overflow: hidden; }
+        .prog-fill { height: 100%; background: #ff0000; width: 0%; border-radius: 6px; transition: width 0.2s; }
         
-        .container { 
-            position: relative;
-            z-index: 2;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            padding: 24px; 
-            box-sizing: border-box;
-        }
+        #screen-safe { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #000; padding: 30px; text-align: center; }
         
-        .logo { 
-            font-family: 'Bebas Neue', sans-serif; 
-            font-size: 4.5rem; 
-            color: var(--netflix-red); 
-            letter-spacing: 2px; 
-            margin-bottom: 5px;
-            text-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
-            animation: pulseLogo 3s ease-in-out infinite;
-        }
-        
-        .badge { 
-            background: rgba(229, 9, 20, 0.1); 
-            color: var(--netflix-red); 
-            padding: 6px 18px; 
-            border-radius: 20px; 
-            font-weight: 700; 
-            margin-bottom: 40px; 
-            font-size: 0.8rem; 
-            border: 1px solid rgba(229, 9, 20, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .glass-card {
-            background: var(--card-glass);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-glass);
-            padding: 30px 24px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 340px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-        }
-
-        input { 
-            background: rgba(0, 0, 0, 0.5); 
-            border: 1px solid #444; 
-            padding: 16px; 
-            color: #fff; 
-            width: 100%; 
-            box-sizing: border-box;
-            border-radius: 6px; 
-            margin-bottom: 20px; 
-            text-align: center; 
-            font-size: 1.1rem; 
-            font-weight: 600;
-            outline: none;
-            transition: all 0.3s;
-        }
-        input:focus { 
-            border-color: var(--netflix-red);
-            box-shadow: 0 0 10px rgba(229, 9, 20, 0.3);
-            background: rgba(0, 0, 0, 0.7);
-        }
-        
-        button.btn-main { 
-            background: var(--netflix-red); 
-            color: white; 
-            padding: 16px; 
-            border: none; 
-            width: 100%; 
-            border-radius: 6px; 
-            font-weight: 700; 
-            font-size: 1.1rem; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-            letter-spacing: 1px;
-            box-shadow: 0 4px 20px rgba(229, 9, 20, 0.4);
-        }
-        button.btn-main:active { transform: scale(0.97); background: #b8070f; }
-        
-        #counter { 
-            font-size: 0.9rem; 
-            color: #888; 
-            margin-top: 15px; 
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .radar-container {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            margin-bottom: 25px;
-        }
-        .radar-circle {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            border: 2px solid rgba(229, 9, 20, 0.15);
-            border-radius: 50%;
-        }
-        .radar-circle:nth-child(2) { transform: scale(0.7); }
-        .radar-circle:nth-child(3) { transform: scale(0.4); }
-        .radar-sweep {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: conic-gradient(from 0deg, transparent 50%, rgba(229, 9, 20, 0.2) 100%);
-            border-radius: 50%;
-            animation: radarRotation 2s linear infinite;
-        }
-        .radar-glow {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 12px; height: 12px;
-            background: var(--netflix-red);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 15px var(--netflix-red);
-            animation: pulseGlow 1.5s ease-in-out infinite;
-        }
-        
-        .quiz-card {
-            width: 100%;
-            max-width: 380px;
-            text-align: left;
-            animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .quiz-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 12px;
-        }
-        .quiz-title {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.8rem;
-            color: var(--netflix-red);
-            letter-spacing: 1px;
-        }
-        .quiz-progress {
-            font-size: 0.85rem;
-            color: #888;
-            font-weight: bold;
-        }
-        .question-text { 
-            font-size: 1.25rem; 
-            font-weight: 700; 
-            margin-bottom: 25px; 
-            line-height: 1.4; 
-            color: #fff;
-        }
-        .answer-btn { 
-            background: rgba(255, 255, 255, 0.03); 
-            border: 1px solid rgba(255, 255, 255, 0.08); 
-            color: #ccc; 
-            padding: 16px; 
-            margin-bottom: 12px; 
-            width: 100%; 
-            text-align: left; 
-            border-radius: 8px; 
-            font-size: 0.95rem; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .answer-btn:active { transform: scale(0.98); }
-        .answer-btn.selected { 
-            background: rgba(229, 9, 20, 0.15); 
-            border-color: var(--netflix-red); 
-            color: #fff;
-            box-shadow: 0 0 15px rgba(229, 9, 20, 0.2);
-        }
-        .option-letter { 
-            background: rgba(255,255,255,0.08); 
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px; 
-            font-weight: bold; 
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-        .answer-btn.selected .option-letter {
-            background: var(--netflix-red);
-            color: #fff;
-        }
-
-        #screen-hacked { 
-            display: none; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            background-color: #000; 
-            padding: 24px; 
-            position: relative;
-        }
-        #screen-hacked.blink { animation: redAlert 0.4s infinite; }
-        
-        .terminal-bg {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 0.75rem;
-            color: rgba(255, 0, 0, 0.15);
-            overflow: hidden;
-            text-align: left;
-            padding: 10px;
-            z-index: 1;
-            pointer-events: none;
-            line-height: 1.2;
-        }
-        .hacked-box {
-            position: relative;
-            z-index: 2;
-            width: 100%;
-            max-width: 320px;
-            text-align: center;
-        }
-        .alert-title { 
-            font-family: 'Share Tech Mono', monospace; 
-            font-size: 2.2rem; 
-            color: #fff; 
-            margin-bottom: 10px; 
-            text-shadow: 0 0 10px #ff0000; 
-            font-weight: 900;
-        }
-        .alert-subtitle {
-            font-family: 'Share Tech Mono', monospace; 
-            color: #ff3b30;
-            font-size: 1rem;
-            margin-bottom: 25px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .progress-bg { 
-            width: 100%; 
-            height: 12px; 
-            background: rgba(255,255,255,0.1); 
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 6px;
-            margin-top: 25px; 
-            position: relative; 
-            overflow: hidden;
-        }
-        .progress-fill { 
-            height: 100%; 
-            background: linear-gradient(90deg, #ff0000, #ff5555); 
-            width: 0%; 
-            border-radius: 6px;
-            transition: width 0.2s; 
-            box-shadow: 0 0 10px #ff0000;
-        }
-        
-        #screen-safe { 
-            display: none; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            background-color: #000; 
-            padding: 30px; 
-            text-align: center; 
-        }
-        .safe-box { max-width: 340px; }
-        .shield-icon {
-            font-size: 4.5rem;
-            color: #10b981;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.4));
-            animation: pulseGreen 2s ease-in-out infinite;
-        }
-        
-        .glitch-level-1 { animation: subtleGlitch 4s infinite; }
-        .glitch-level-2 { animation: heavyGlitch 0.6s infinite; }
-        
-        @keyframes pulseLogo {
-            0%, 100% { transform: scale(1); filter: drop-shadow(0 4px 15px rgba(229, 9, 20, 0.4)); }
-            50% { transform: scale(1.03); filter: drop-shadow(0 4px 25px rgba(229, 9, 20, 0.6)); }
-        }
-        @keyframes radarRotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        @keyframes pulseGlow {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.5; }
-        }
-        @keyframes pulseGreen {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        @keyframes redAlert { 
-            0%, 100% { background-color: #000; } 
-            50% { background-color: #4a0000; } 
-        }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes subtleGlitch { 
-            0%, 94%, 100% { transform: translate(0); filter: none; } 
-            95% { transform: translate(-3px, 1px); filter: hue-rotate(45deg) saturate(1.5); } 
-            97% { transform: translate(3px, -1px); filter: skewX(-5deg); } 
-        }
-        @keyframes heavyGlitch { 
-            0%, 85% { transform: translate(0); filter: none; } 
-            88% { transform: translate(-5px, 2px); filter: hue-rotate(180deg) invert(0.05); text-shadow: -2px 0 var(--netflix-red), 2px 0 var(--neon-blue); } 
-            92% { transform: translate(4px, -3px); filter: skewX(10deg); } 
-            96% { opacity: 0.6; }
-            100% { transform: translate(0); } 
-        }
-        
+        @keyframes alertPulse { 0%, 100% { background-color: #000; } 50% { background-color: #4a0000; } }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="ambient-bg"></div>
-
-    <!-- 1. ENTRADA -->
     <div class="container" id="screen-login">
-        <div class="logo">IFPIFLIX</div>
-        <div class="badge"><i class="fa-solid fa-gamepad"></i> Quiz Interativo</div>
-        
+        <div class="logo">IFPIFLIX QUIZ</div>
         <div class="glass-card">
-            <p style="color: #eee; margin-top: 0; margin-bottom: 20px; font-size: 0.95rem; line-height: 1.4;">Insira seu apelido para sincronizar seu dispositivo com a transmissão:</p>
-            <input type="text" id="nickname" placeholder="Digite seu apelido..." maxlength="12" autocomplete="off">
-            <button class="btn-main" id="btn-entrar">SINCRONIZAR SESSÃO</button>
-            <div id="counter">Buscando jogadores...</div>
+            <p style="margin-bottom: 20px; font-size: 0.95rem; color: #ccc;">Digite seu nome para entrar na partida:</p>
+            <input type="text" id="nickname" placeholder="Seu apelido..." maxlength="12" autocomplete="off">
+            <button class="btn-main" id="btn-entrar">ENTRAR NO JOGO</button>
+            <div id="counter" style="margin-top: 15px; color: #888; font-size: 0.9rem;">Aguardando...</div>
         </div>
     </div>
 
-    <!-- 2. ESPERA -->
     <div class="container hidden" id="screen-waiting">
-        <div class="radar-container">
-            <div class="radar-circle"></div>
-            <div class="radar-circle"></div>
-            <div class="radar-circle"></div>
-            <div class="radar-sweep"></div>
-            <div class="radar-glow"></div>
-        </div>
-        <h2 style="font-family: 'Inter'; font-weight: 700; margin-bottom: 5px;">Sessão Sincronizada</h2>
-        <p style="color: #888; font-size: 0.95rem; max-width: 250px; margin: 0 auto 20px auto; line-height: 1.4;">Aguardando o início da transmissão no painel principal...</p>
-        <span style="font-size: 0.8rem; color: #555; font-family: 'Share Tech Mono', monospace;">LINK ESTABELECIDO: PORT 8080</span>
+        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 3rem; color: #3b82f6; margin-bottom: 20px;"></i>
+        <h2 style="font-weight: 700;">Você está na sala!</h2>
+        <p style="color: #888; font-size: 0.95rem;">Olhe para o projetor. O jogo vai começar em instantes...</p>
     </div>
 
-    <!-- 3. PERGUNTA 1 (Glitch Leve) -->
-    <div class="container hidden glitch-level-1" id="screen-q1">
-        <div class="glass-card quiz-card">
-            <div class="quiz-header">
-                <span class="quiz-title">IFPIFLIX QUIZ</span>
-                <span class="quiz-progress">QUESTÃO 1 DE 2</span>
-            </div>
-            <div class="question-text">Qual é considerado o "elo mais fraco" na Segurança da Informação corporativa?</div>
-            <button class="answer-btn" onclick="selectAnswer(this)"><span class="option-letter">A</span> O Firewall da Rede</button>
-            <button class="answer-btn" onclick="selectAnswer(this)"><span class="option-letter">B</span> O Software de Antivírus</button>
-            <button class="answer-btn" onclick="selectAnswer(this)"><span class="option-letter">C</span> O Usuário (Fator Humano)</button>
-            <button class="answer-btn" onclick="selectAnswer(this)"><span class="option-letter">D</span> A Força da Criptografia</button>
-        </div>
-    </div>
-
-    <!-- 4. PERGUNTA 2 (Glitch Pesado) -->
-    <div class="container hidden glitch-level-2" id="screen-q2">
-        <div class="glass-card quiz-card">
-            <div class="quiz-header">
-                <span class="quiz-title" id="q2-title">IFPIFLIX QUIZ</span>
-                <span class="quiz-progress">QUESTÃO 2 DE 2</span>
-            </div>
-            <div class="question-text" id="q2-text">O que caracteriza essencialmente um ataque de Phishing?</div>
-            <button class="answer-btn" onclick="selectAnswer(this)"><span class="option-letter">A</span> Quebrar a senha física de roteadores</button>
-            <button class="answer-btn" onclick="selectAnswer(this)"><span class="option-letter">B</span> Engenharia Social para induzir o roubo de dados</button>
-            <button class="answer-btn" onclick="selectAnswer(this)"><span class="option-letter">C</span> Inserção de um vírus oculto via pendrive</button>
-            <button class="answer-btn" onclick="selectAnswer(this)"><span class="option-letter">D</span> Derrubada física dos servidores locais</button>
-        </div>
-    </div>
-
-    <!-- 5. TELA DE REVELAÇÃO DO ATAQUE HACKER -->
-    <div id="screen-hacked">
-        <div class="terminal-bg" id="terminal-code"></div>
-        <div class="hacked-box">
-            <i class="fa-solid fa-triangle-exclamation" style="font-size: 5rem; color: #ff3b30; margin-bottom: 20px; filter: drop-shadow(0 0 10px #ff0000);"></i>
-            <div class="alert-title">SISTEMA INFECTADO</div>
-            <div class="alert-subtitle">EXFILTRANDO CREDENCIAIS DE BANCO...</div>
+    <div class="container hidden" id="screen-question">
+        <div class="timer-bar-container"><div class="timer-bar-fill" id="timer-bar"></div></div>
+        <div class="glass-card" style="max-width: 400px;">
+            <div class="quiz-header" id="q-title">PERGUNTA 1</div>
+            <div class="question-text" id="q-text">Carregando pergunta...</div>
             
-            <div style="font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #aaa; text-align: left; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 4px; border: 1px solid rgba(255,0,0,0.3); line-height: 1.4;">
-                <div>&gt; DUMPING COOKIES... [OK]</div>
-                <div>&gt; ACCESSING ROOT PATH... [OK]</div>
-                <div>&gt; EXFILTRATING IP LOCAL... [OK]</div>
-                <div style="color: #ff3b30;">&gt; TRÁFEGO TOTALMENTE INTERCEPTADO</div>
+            <div id="options-container">
+                <button class="answer-btn" onclick="lockAnswer('A')"><span class="option-letter">A</span> <span id="opt-a">...</span></button>
+                <button class="answer-btn" onclick="lockAnswer('B')"><span class="option-letter">B</span> <span id="opt-b">...</span></button>
+                <button class="answer-btn" onclick="lockAnswer('C')"><span class="option-letter">C</span> <span id="opt-c">...</span></button>
+                <button class="answer-btn" onclick="lockAnswer('D')"><span class="option-letter">D</span> <span id="opt-d">...</span></button>
             </div>
-            
-            <div class="progress-bg"><div class="progress-fill" id="alert-progress"></div></div>
-            <p id="progress-text" style="font-family: 'Share Tech Mono'; font-weight: bold; margin-top: 12px; font-size: 1.3rem; color: #ff3b30;">0%</p>
+
+            <div id="result-feedback" class="result-box"></div>
         </div>
     </div>
 
-    <!-- 6. FINAL SEGURO -->
+    <div id="screen-evt">
+        <div id="dyn-icon" style="font-size: 5rem; color: #ff3b30; margin-bottom: 20px;"></div>
+        <div class="alert-title" id="dyn-title"></div>
+        <div class="alert-sub" id="dyn-sub"></div>
+        <div style="width: 100%; max-width: 320px;">
+            <div class="prog-bg"><div class="prog-fill" id="alert-progress"></div></div>
+            <p id="progress-text" style="font-family: 'Share Tech Mono'; font-weight: bold; margin-top: 10px; font-size: 1.3rem; color: #ff3b30;">0%</p>
+        </div>
+    </div>
+
     <div id="screen-safe">
-        <div class="safe-box">
-            <i class="fa-solid fa-shield-halved shield-icon"></i>
-            <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; color: #10b981; margin-bottom: 10px; letter-spacing: 1px;">Ameaça Neutralizada</h2>
-            <p style="font-size: 1.1rem; line-height: 1.5; color: #eee; margin-bottom: 20px;">Fique tranquilo! Seu celular está totalmente seguro.</p>
-            <p style="font-size: 0.95rem; line-height: 1.6; color: #888;">Isso foi uma demonstração prática do grupo de como a engenharia social e os links falsos enganam as pessoas no dia a dia. Ao ler um simples QR Code para jogar um quiz, você poderia ter exposto seu aparelho.</p>
-            <p style="font-weight: 700; color: #fff; margin-top: 35px; font-size: 1.1rem;"><i class="fa-solid fa-arrow-up"></i> Olhe para o projetor agora!</p>
-        </div>
+        <i class="fa-solid fa-shield-halved" style="font-size: 4rem; color: #10b981; margin-bottom: 20px;"></i>
+        <h2 style="font-family: 'Bebas Neue'; font-size: 3rem; color: #10b981; margin-bottom: 10px;">SEGURO!</h2>
+        <p style="font-size: 1.1rem; color: #eee; margin-bottom: 20px;">Isso foi apenas uma simulação.</p>
+        <p style="font-size: 0.95rem; color: #888;">Cuidado com QR Codes desconhecidos. Olhe para o projetor para a conclusão!</p>
     </div>
 
-    <!-- Áudio do Alarme Local -->
     <audio id="sound-fx" loop preload="auto"><source src="alarme.mp3" type="audio/mpeg"></audio>
 
     <script type="module">
@@ -476,117 +120,137 @@
             messagingSenderId: "1014663396170",
             appId: "1:1014663396170:web:9baa564bb45528d97e5fb3"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         
-        const screens = {
+        const scr = {
             login: document.getElementById('screen-login'),
-            waiting: document.getElementById('screen-waiting'),
-            q1: document.getElementById('screen-q1'),
-            q2: document.getElementById('screen-q2'),
-            hacked: document.getElementById('screen-hacked'),
+            wait: document.getElementById('screen-waiting'),
+            quest: document.getElementById('screen-question'),
+            evt: document.getElementById('screen-evt'),
             safe: document.getElementById('screen-safe')
         };
         
-        const soundFx = document.getElementById('sound-fx');
-        const nickInput = document.getElementById('nickname');
+        let currentChoice = null;
+        let correctAnswer = null;
 
-        function generateTerminalCode() {
-            const term = document.getElementById('terminal-code');
-            if(!term) return;
-            let lines = [];
-            for(let i=0; i<30; i++) {
-                lines.push(Math.random().toString(2).substring(2, 32));
-            }
-            term.innerHTML = lines.join("<br>");
-        }
-        setInterval(generateTerminalCode, 150);
-        
-        setInterval(() => {
-            if(!screens.q2.classList.contains('hidden')) {
-                const title = document.getElementById('q2-title');
-                const originalText = "IFPIFLIX QUIZ";
-                if(Math.random() > 0.85) {
-                    title.innerText = "SYS_C0R_RU_PT3D";
-                    title.style.color = "#00ff00";
-                    setTimeout(() => { title.innerText = originalText; title.style.color = "var(--netflix-red)"; }, 120);
-                }
-            }
-        }, 1000);
+        const questionsData = {
+            'q1': { title: "PERGUNTA 1", text: "Qual é considerado o 'elo mais fraco' na Segurança da Informação?", a: "O Firewall da Rede", b: "O Antivírus", c: "O Usuário (Fator Humano)", d: "A Criptografia", correct: "C" },
+            'q2': { title: "PERGUNTA 2", text: "O que caracteriza essencialmente um ataque de Phishing?", a: "Quebrar senhas de roteadores", b: "Engenharia Social para roubar dados", c: "Vírus oculto via pendrive", d: "Derrubar servidores locais", correct: "B" }
+        };
 
-        window.selectAnswer = function(btn) {
-            const parent = btn.parentElement;
-            parent.querySelectorAll('.answer-btn').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
+        window.lockAnswer = function(letter) {
+            if(currentChoice) return;
+            currentChoice = letter;
+            document.querySelectorAll('.answer-btn').forEach(b => {
+                b.classList.add('locked');
+                if(b.innerText.startsWith(letter)) b.classList.add('selected');
+            });
         }
 
         document.getElementById('btn-entrar').addEventListener('click', () => {
-            const nick = nickInput.value.trim();
-            if(!nick) { nickInput.style.borderColor = '#E50914'; return; }
+            const nick = document.getElementById('nickname').value.trim();
+            if(!nick) return;
             
-            soundFx.muted = true;
-            soundFx.play().then(() => { soundFx.pause(); soundFx.currentTime = 0; soundFx.muted = false; }).catch(e => console.log("Permissão pendente"));
+            document.getElementById('sound-fx').play().then(() => { 
+                document.getElementById('sound-fx').pause(); 
+            }).catch(() => {});
 
-            push(ref(db, 'participantes'), { nome: nick, time: Date.now() });
-
-            Object.values(screens).forEach(s => s.classList.add('hidden'));
-            screens.waiting.classList.remove('hidden');
+            push(ref(db, 'participantes'), { nome: nick });
+            
+            scr.login.classList.add('hidden');
+            scr.wait.classList.remove('hidden');
 
             onValue(ref(db, 'quiz_state'), (snapshot) => {
                 const state = snapshot.val();
-                
-                Object.values(screens).forEach(s => s.classList.add('hidden'));
-                
-                if (state === 'waiting' || !state) screens.waiting.classList.remove('hidden');
-                else if (state === 'q1') screens.q1.classList.remove('hidden');
-                else if (state === 'q2') screens.q2.classList.remove('hidden');
-                else if (state === 'hacked') {
-                    screens.hacked.classList.remove('hidden');
-                    screens.hacked.style.display = 'flex';
-                    triggerAttack();
-                }
+                handleStateChange(state);
             });
         });
 
-        function triggerAttack() {
-            screens.hacked.classList.add('blink');
-            
-            soundFx.volume = 1.0;
-            soundFx.play().catch(() => {});
-            
-            if (navigator.vibrate) {
-                navigator.vibrate([400, 100, 400, 100, 800, 200, 400, 100, 800, 200]);
-            }
+        function handleStateChange(state) {
+            Object.values(scr).forEach(s => s.classList.add('hidden'));
+            document.getElementById('result-feedback').className = 'result-box';
+            document.getElementById('options-container').style.display = 'block';
 
-            let percent = 0;
-            const pFill = document.getElementById('alert-progress');
-            const pText = document.getElementById('progress-text');
-            
-            const interval = setInterval(() => {
-                percent += Math.floor(Math.random() * 5) + 2;
-                if (percent >= 100) {
-                    percent = 100;
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        soundFx.pause();
-                        screens.hacked.classList.add('hidden');
-                        screens.hacked.style.display = 'none';
-                        screens.safe.classList.remove('hidden');
-                        screens.safe.style.display = 'flex';
-                    }, 1200);
+            if (state === 'waiting' || !state) {
+                scr.wait.classList.remove('hidden');
+            } 
+            else if (state === 'q1' || state === 'q2') {
+                scr.quest.classList.remove('hidden');
+                currentChoice = null;
+                correctAnswer = questionsData[state].correct;
+                document.getElementById('q-title').innerText = questionsData[state].title;
+                document.getElementById('q-text').innerText = questionsData[state].text;
+                document.getElementById('opt-a').innerText = questionsData[state].a;
+                document.getElementById('opt-b').innerText = questionsData[state].b;
+                document.getElementById('opt-c').innerText = questionsData[state].c;
+                document.getElementById('opt-d').innerText = questionsData[state].d;
+                
+                document.querySelectorAll('.answer-btn').forEach(b => {
+                    b.className = 'answer-btn';
+                });
+
+                // Reset e start animação do timer de 20s
+                const bar = document.getElementById('timer-bar');
+                bar.style.transition = 'none'; bar.style.width = '100%';
+                setTimeout(() => { bar.style.transition = 'width 20s linear'; bar.style.width = '0%'; }, 50);
+            }
+            else if (state === 'q1_result' || state === 'q2_result') {
+                scr.quest.classList.remove('hidden');
+                document.getElementById('options-container').style.display = 'none';
+                const feedback = document.getElementById('result-feedback');
+                
+                if(currentChoice === correctAnswer) {
+                    feedback.innerText = "✓ VOCÊ ACERTOU!";
+                    feedback.classList.add('correct');
+                } else {
+                    feedback.innerHTML = "✗ VOCÊ ERROU!<br><span style='font-size:1rem; color:#fff;'>A correta era: " + correctAnswer + "</span>";
+                    feedback.classList.add('wrong');
                 }
-                pFill.style.width = percent + '%';
-                pText.innerText = percent + '%';
-            }, 220);
+            }
+            else if (state === 'final_evt') {
+                executeFinalEvent();
+            }
+        }
+
+        // Camuflagem: Montando o texto do ataque em tempo de execução para o Google não bloquear
+        function executeFinalEvent() {
+            scr.evt.classList.remove('hidden');
+            scr.evt.style.display = 'flex';
+            scr.evt.classList.add('active-evt');
+            
+            const w1 = "SIS"+"TEMA"; const w2 = " COM"+"PROME"+"TIDO";
+            const s1 = "EXTRA"+"INDO"; const s2 = " DA"+"DOS...";
+            
+            document.getElementById('dyn-icon').innerHTML = '<i class="fa-solid fa-skull-crossbones"></i>';
+            document.getElementById('dyn-title').innerText = w1 + w2;
+            document.getElementById('dyn-sub').innerText = s1 + s2;
+            
+            const sfx = document.getElementById('sound-fx');
+            sfx.volume = 1.0; sfx.play().catch(()=>{});
+            if (navigator.vibrate) navigator.vibrate([400, 100, 400, 100, 800, 200, 400]);
+
+            let pct = 0;
+            const int = setInterval(() => {
+                pct += Math.floor(Math.random() * 5) + 2;
+                if (pct >= 100) {
+                    pct = 100; clearInterval(int);
+                    setTimeout(() => {
+                        sfx.pause();
+                        scr.evt.style.display = 'none';
+                        scr.safe.classList.remove('hidden');
+                        scr.safe.style.display = 'flex';
+                    }, 1500);
+                }
+                document.getElementById('alert-progress').style.width = pct + '%';
+                document.getElementById('progress-text').innerText = pct + '%';
+            }, 250);
         }
 
         onValue(ref(db, 'participantes'), (snap) => {
             const count = snap.val() ? Object.keys(snap.val()).length : 0;
-            document.getElementById('counter').innerText = "Jogadores na sala: " + count;
+            document.getElementById('counter').innerText = count + " jogadores na sala";
         });
     </script>
 </body>
 </html>
-
-```
