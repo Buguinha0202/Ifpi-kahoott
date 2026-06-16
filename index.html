@@ -9,34 +9,148 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        :root { --netflix-red: #E50914; --dark-bg: #090909; --card-glass: rgba(22, 22, 22, 0.9); --border-glass: rgba(255, 255, 255, 0.08); }
-        body { margin: 0; padding: 0; background-color: var(--dark-bg); color: #fff; font-family: 'Inter', sans-serif; text-align: center; overflow: hidden; user-select: none; -webkit-tap-highlight-color: transparent; }
-        .ambient-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(229, 9, 20, 0.06) 0%, rgba(9, 9, 9, 1) 100%); z-index: 1; pointer-events: none; }
-        .container { position: relative; z-index: 2; display: none; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 24px; box-sizing: border-box; }
-        .logo { font-family: 'Bebas Neue', sans-serif; font-size: 4rem; color: var(--netflix-red); letter-spacing: 2px; margin-bottom: 5px; text-shadow: 0 4px 15px rgba(229, 9, 20, 0.4); }
-        .badge { background: rgba(229, 9, 20, 0.1); color: var(--netflix-red); padding: 6px 18px; border-radius: 20px; font-weight: 700; margin-bottom: 30px; font-size: 0.8rem; border: 1px solid rgba(229, 9, 20, 0.3); text-transform: uppercase; letter-spacing: 1px; }
-        .glass-card { background: var(--card-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border-glass); padding: 30px 24px; border-radius: 12px; width: 100%; max-width: 340px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
-        input { background: rgba(0, 0, 0, 0.5); border: 1px solid #444; padding: 16px; color: #fff; width: 100%; box-sizing: border-box; border-radius: 6px; margin-bottom: 20px; text-align: center; font-size: 1.1rem; font-weight: 600; outline: none; }
+        :root { 
+            --netflix-red: #E50914; 
+            --dark-bg: #090909;
+            --card-glass: rgba(22, 22, 22, 0.9);
+            --border-glass: rgba(255, 255, 255, 0.08);
+        }
+        
+        body { 
+            margin: 0; padding: 0; 
+            background-color: var(--dark-bg); 
+            color: #fff; 
+            font-family: 'Inter', sans-serif; 
+            text-align: center; 
+            overflow: hidden; 
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .ambient-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(229, 9, 20, 0.06) 0%, rgba(9, 9, 9, 1) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .container { 
+            position: relative;
+            z-index: 2;
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            padding: 24px; 
+            box-sizing: border-box;
+        }
+        
+        .logo { 
+            font-family: 'Bebas Neue', sans-serif; 
+            font-size: 4rem; 
+            color: var(--netflix-red); 
+            letter-spacing: 2px; 
+            margin-bottom: 5px;
+            text-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+        }
+        
+        .badge { 
+            background: rgba(229, 9, 20, 0.1); 
+            color: var(--netflix-red); 
+            padding: 6px 18px; 
+            border-radius: 20px; 
+            font-weight: 700; 
+            margin-bottom: 30px; 
+            font-size: 0.8rem; 
+            border: 1px solid rgba(229, 9, 20, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .glass-card {
+            background: var(--card-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            padding: 30px 24px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 340px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+
+        input { 
+            background: rgba(0, 0, 0, 0.5); 
+            border: 1px solid #444; 
+            padding: 16px; 
+            color: #fff; 
+            width: 100%; 
+            box-sizing: border-box;
+            border-radius: 6px; 
+            margin-bottom: 20px; 
+            text-align: center; 
+            font-size: 1.1rem; 
+            font-weight: 600;
+            outline: none;
+        }
         input:focus { border-color: #3b82f6; }
-        button.btn-main { background: #3b82f6; color: white; padding: 16px; border: none; width: 100%; border-radius: 6px; font-weight: 700; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        
+        button.btn-main { 
+            background: #3b82f6; 
+            color: white; 
+            padding: 16px; 
+            border: none; 
+            width: 100%; 
+            border-radius: 6px; 
+            font-weight: 700; 
+            font-size: 1.1rem; 
+            cursor: pointer; 
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
         .timer-bar-container { width: 100%; height: 6px; background: #222; position: absolute; top: 0; left: 0; }
         .timer-bar-fill { height: 100%; background: #3b82f6; width: 100%; }
+        
         .quiz-header { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: #3b82f6; margin-bottom: 15px; letter-spacing: 1px; }
         .question-text { font-size: 1.2rem; font-weight: 700; margin-bottom: 25px; line-height: 1.4; }
-        .answer-btn { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); color: #ccc; padding: 16px; margin-bottom: 12px; width: 100%; text-align: left; border-radius: 8px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 15px; transition: 0.2s; }
+        
+        .answer-btn { 
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            color: #ccc; 
+            padding: 16px; 
+            margin-bottom: 12px; 
+            width: 100%; 
+            text-align: left; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            transition: 0.2s;
+        }
         .option-letter { background: rgba(255,255,255,0.08); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; }
+        
         .answer-btn.locked { opacity: 0.4; pointer-events: none; }
         .answer-btn.selected { background: rgba(59, 130, 246, 0.3); border-color: #3b82f6; color: #fff; opacity: 1; }
+        
         .result-box { display: none; padding: 25px 20px; border-radius: 8px; font-size: 1.4rem; font-weight: bold; text-align: center; animation: popIn 0.3s ease; }
         .result-box.correct { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 2px solid #10b981; }
         .result-box.wrong { background: rgba(229, 9, 20, 0.15); color: #E50914; border: 2px solid #E50914; }
+
         .radar { width: 80px; height: 80px; border: 3px solid rgba(59, 130, 246, 0.2); border-radius: 50%; position: relative; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; }
         .radar::after { content: ''; width: 100%; height: 100%; border: 3px solid transparent; border-top-color: #3b82f6; border-radius: 50%; position: absolute; animation: spin 1.5s linear infinite; }
+
         #screen-evt { background-color: #000; display: none; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 24px; }
         #screen-evt.active-evt { animation: redAlert 0.4s infinite; }
         .prog-bg { width: 100%; max-width: 300px; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; margin-top: 25px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); }
         .prog-fill { height: 100%; background: #ff0000; width: 0%; box-shadow: 0 0 10px #ff0000; }
+        
         #screen-safe { background-color: #000; display: none; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 30px; }
+
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes redAlert { 0%, 100% { background-color: #000; } 50% { background-color: #3a0000; } }
         @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -45,6 +159,7 @@
 <body>
     <div class="ambient-bg"></div>
 
+    <!-- 1. TELA DE LOGIN -->
     <div class="container" id="screen-login" style="display: flex;">
         <div class="logo">IFPIFLIX</div>
         <div class="badge"><i class="fa-solid fa-gamepad"></i> Quiz Interativo</div>
@@ -56,12 +171,14 @@
         </div>
     </div>
 
+    <!-- 2. TELA DE ESPERA -->
     <div class="container" id="screen-waiting">
         <div class="radar"><i class="fa-solid fa-satellite-dish" style="color: #3b82f6; font-size: 1.5rem;"></i></div>
         <h2 style="font-weight: 700; margin-bottom: 10px;">Sessão Sincronizada</h2>
         <p style="color: #888; font-size: 0.95rem; max-width: 280px;">Aguardando o início da partida no painel do projetor...</p>
     </div>
 
+    <!-- 3. TELA DE PERGUNTAS -->
     <div class="container" id="screen-question">
         <div class="timer-bar-container"><div class="timer-bar-fill" id="timer-bar"></div></div>
         <div class="glass-card" style="max-width: 360px;">
@@ -79,6 +196,7 @@
         </div>
     </div>
 
+    <!-- 4. TELA DA SIMULAÇÃO HACKER (CAMUFLADA) -->
     <div id="screen-evt">
         <i class="fa-solid fa-triangle-exclamation" style="font-size: 4.5rem; color: #ff3b30; margin-bottom: 20px;"></i>
         <h1 style="font-family: 'Share Tech Mono'; font-size: 2rem; color: #fff; letter-spacing: 1px;">SISTEMA EM TESTE</h1>
@@ -87,6 +205,7 @@
         <p id="progress-text" style="font-family: 'Share Tech Mono'; font-weight: bold; margin-top: 10px; font-size: 1.2rem; color: #ff3b30;">0%</p>
     </div>
 
+    <!-- 5. TELA FINAL SEGURA -->
     <div id="screen-safe">
         <i class="fa-solid fa-shield-halved" style="font-size: 4.5rem; color: #10b981; margin-bottom: 20px;"></i>
         <h2 style="font-family: 'Bebas Neue'; font-size: 2.5rem; color: #10b981; letter-spacing: 1px;">AMBIENTE SEGURO</h2>
@@ -106,7 +225,7 @@
         
         let currentChoice = null; 
         let correctAnswer = null;
-        let myUserId = null; // Armazena a ID do aluno
+        let myUserId = null; 
 
         const questionsData = {
             'q1': { title: "QUESTÃO 01", text: "Qual é considerado o 'elo mais fraco' na Segurança da Informação?", a: "O Firewall da Rede", b: "O Software Antivírus", c: "O Usuário (Fator Humano)", d: "A Criptografia", correct: "C" },
@@ -118,7 +237,6 @@
             document.getElementById(screenId).style.display = 'flex';
         }
 
-        // AGORA ENVIA A RESPOSTA PARA O BANCO DE DADOS
         window.lockAnswer = function(letter) {
             if(currentChoice) return;
             currentChoice = letter;
@@ -135,12 +253,18 @@
             const nick = document.getElementById('nickname').value.trim();
             if(!nick) return;
             
-            document.getElementById('sound-fx').play().then(() => { document.getElementById('sound-fx').pause(); }).catch(()=>{});
+            // CORREÇÃO DO ÁUDIO: Desbloqueia o som MUDO para não apitar fora de hora!
+            const sfx = document.getElementById('sound-fx');
+            sfx.muted = true;
+            sfx.play().then(() => { 
+                sfx.pause(); 
+                sfx.currentTime = 0; 
+                sfx.muted = false; 
+            }).catch(()=>{});
 
-            // Cria o usuário e guarda a ID
             const newUserRef = push(ref(db, 'participantes'));
             myUserId = newUserRef.key;
-            set(newUserRef, { nome: nick, ans: "" }); // Envia com resposta vazia
+            set(newUserRef, { nome: nick, ans: "" }); 
             
             showScreen('screen-waiting');
 
@@ -153,7 +277,7 @@
                 else if (state === 'q1' || state === 'q2') {
                     currentChoice = null;
                     correctAnswer = questionsData[state].correct;
-                    if(myUserId) update(ref(db, 'participantes/' + myUserId), { ans: "" }); // Reseta a resposta no banco
+                    if(myUserId) update(ref(db, 'participantes/' + myUserId), { ans: "" });
                     
                     document.getElementById('q-title').innerText = questionsData[state].title;
                     document.getElementById('q-text').innerText = questionsData[state].text;
@@ -195,7 +319,9 @@
         function executeFakeHack() {
             document.getElementById('screen-evt').classList.add('active-evt');
             const sfx = document.getElementById('sound-fx');
-            sfx.volume = 1.0; sfx.play().catch(()=>{});
+            sfx.volume = 1.0; 
+            sfx.play().catch(()=>{}); // Agora sim ele apita de verdade!
+            
             if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 500]);
             let pct = 0; const fill = document.getElementById('alert-progress'); const txt = document.getElementById('progress-text');
             const int = setInterval(() => {
@@ -215,5 +341,6 @@
     </script>
 </body>
 </html>
+
 
 ```
